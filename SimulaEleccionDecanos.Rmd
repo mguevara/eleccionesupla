@@ -1,0 +1,206 @@
+---
+title: "Simulación Elecciones Decanatura 2026"
+author: "Miguel Guevara"
+date: "2026-04-19"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Simulación decanatura UPLA 2026.
+
+Esta simulación permite explicar y ejemplificar el cálculo de votos para una elección triestamental donde los académicos ponderan el 50%, los estudiantes el 30% y los funcionarios el 20%. 
+
+Adicionalmente el voto de los académicos se pondera así: 
+Con jerarquía:
+- Jornada completa: 1
+- Media jornada: 0.75
+- Horas: 0.5
+
+Sin jerarquía:
+
+- Jornada completa 0.75, 
+- Media jornada 0.5
+- Horas 0.25.
+
+Existe voto blanco, pero no nulo. 
+Se simulará para dos candidatos/as.
+
+Se usarán valores iguales por candidato, para facilitar la comprensión de la simulación. 
+Ej. para A todo 200, para B todo 100, para blancos todo 20. 
+Así es fácil trabajar con números enteros en la sumatoria de resultados de votos por candidatos para académicos.
+
+```{r valores}
+A = 10
+B = 5
+bl = 2
+#A  <- as.integer(readline(prompt="A: "))
+#B  <- as.integer(readline(prompt="B: "))
+#bl  <- as.integer(readline(prompt="Blancos: "))
+A_cj_jc = A
+A_cj_mj = A
+A_cj_h = A
+A_sj_jc = A
+A_sj_mj = A
+A_sj_h = A
+A_est = A
+A_fun = A
+
+B_cj_jc = B
+B_cj_mj = B
+B_cj_h = B
+B_sj_jc = B
+B_sj_mj = B
+B_sj_h = B
+B_est = B
+B_fun = B
+
+bl_cj_jc = bl
+bl_cj_mj = bl
+bl_cj_h = bl
+bl_sj_jc = bl
+bl_sj_mj = bl
+bl_sj_h = bl
+bl_est = bl
+bl_fun = bl
+
+```
+
+## Cálculo ponderación de Académicos
+
+Por cada candidato y por los votos blancos se tienen 8 variables. Son 6 combinaciones para candidatos más estudiantes y funcionarios.
+Se debe totalizar la cantidad de votos por estamento, calcular porcentaje de votos obtenidos por cada candidato (blanco es como si fuera otro candidato) y después ponderar por el estamento para obtener el resultado final por candidato.
+
+```{r pressure}
+cj_jc = 1
+cj_mj = 0.75
+cj_h = 0.5
+sj_jc = 0.75
+sj_mj = 0.5
+sj_h = 0.25
+
+A_ac_pond = A_cj_jc * cj_jc + A_cj_mj*cj_mj + A_cj_h*cj_h + A_sj_jc*sj_jc + A_sj_mj*sj_mj + A_sj_h*sj_h
+A_ac_votos = A_cj_jc+A_cj_mj+A_cj_h+A_sj_jc+A_sj_mj+A_sj_h
+print(paste("Total ac votaron por A:", A_ac_votos, "| A ac ponderados:",A_ac_pond))
+
+B_ac_pond = B_cj_jc * cj_jc + B_cj_mj*cj_mj + B_cj_h*cj_h + B_sj_jc*sj_jc + B_sj_mj*sj_mj + B_sj_h*sj_h
+B_ac_votos = B_cj_jc+B_cj_mj+B_cj_h+B_sj_jc+B_sj_mj+B_sj_h
+print(paste("Total ac votaron por B:", B_ac_votos, "B ac ponderados:",B_ac_pond))
+
+bl_ac_pond = bl_cj_jc * cj_jc + bl_cj_mj*cj_mj + bl_cj_h*cj_h + bl_sj_jc*sj_jc + bl_sj_mj*sj_mj + bl_sj_h*sj_h
+bl_ac_votos = bl_cj_jc+bl_cj_mj+bl_cj_h+bl_sj_jc+bl_sj_mj+bl_sj_h
+print(paste("Total ac votaron blanco:", bl_ac_votos, "bl ac ponderados:",bl_ac_pond))
+
+```
+
+# Cálculo de totales por estamento
+Se deben sumar los votos ya ponderados de académicos para cada candidato más los blancos.
+Los votos de funcionarios y estudiantes no se ponderan.
+
+```{r}
+total_votos_ac_ponderados = A_ac_pond + B_ac_pond + bl_ac_pond
+total_votos_est = A_est + B_est + bl_est
+total_votos_fun = A_fun + B_fun + bl_fun
+print(total_votos_ac_ponderados)
+print(total_votos_est)
+print(total_votos_fun)
+
+
+```
+
+# Cálculo de porcentaje por candidatos y blancos
+El total de votos obtenidos por cada candidato y blancos se debe dividir por el total de votos de cadad estamento.
+
+```{r}
+A_ac_porcentaje = A_ac_pond/total_votos_ac_ponderados
+B_ac_porcentaje = B_ac_pond/total_votos_ac_ponderados
+bl_ac_porcentaje = bl_ac_pond/total_votos_ac_ponderados
+
+print(paste("A acad:", A_ac_porcentaje))
+print(paste("B acad:", B_ac_porcentaje))
+print(paste("Blancos acad:", bl_ac_porcentaje))
+print(paste("Suma verifica 100:", A_ac_porcentaje+B_ac_porcentaje+bl_ac_porcentaje))
+
+#estudiantes
+A_est_porcentaje = A_est/total_votos_est
+B_est_porcentaje = B_est/total_votos_est
+bl_est_porcentaje = bl_est/total_votos_est
+
+
+print(paste("A est:", A_est_porcentaje))
+print(paste("B est:", B_est_porcentaje))
+print(paste("Blancos est:", bl_est_porcentaje))
+print(paste("Suma verifica 100:", A_est_porcentaje+B_est_porcentaje+bl_est_porcentaje))
+
+#funcionarios
+A_fun_porcentaje = A_fun/total_votos_fun
+B_fun_porcentaje = B_fun/total_votos_fun
+bl_fun_porcentaje = bl_fun/total_votos_fun
+
+
+print(paste("A fun:", A_fun_porcentaje))
+print(paste("B fun:", B_fun_porcentaje))
+print(paste("Blancos fun:", bl_fun_porcentaje))
+print(paste("Suma verifica 100:", A_fun_porcentaje+B_fun_porcentaje+bl_fun_porcentaje))
+```
+# Calculo total votos ponderado por candidato
+```{r}
+peso_ac = 0.5
+peso_est = 0.3
+peso_fun = 0.2
+
+A_ac_aporte = A_ac_porcentaje*peso_ac
+B_ac_aporte = B_ac_porcentaje*peso_ac
+bl_ac_aporte = bl_ac_porcentaje*peso_ac
+
+A_est_aporte = A_est_porcentaje*peso_est
+B_est_aporte = B_est_porcentaje*peso_est
+bl_est_aporte = bl_est_porcentaje*peso_est
+
+A_fun_aporte = A_fun_porcentaje*peso_fun
+B_fun_aporte = B_fun_porcentaje*peso_fun
+bl_fun_aporte = bl_fun_porcentaje*peso_fun
+
+A_total = A_ac_aporte+A_est_aporte+A_fun_aporte
+B_total = B_ac_aporte+B_est_aporte+B_fun_aporte
+bl_total = bl_ac_aporte+bl_est_aporte+bl_fun_aporte
+
+print(paste("A:TOTAL", A_total, " | A acad:", A_ac_aporte, "| A est:", A_est_aporte, "| A fun:", A_fun_aporte))
+print(paste("B:TOTAL", B_total, " | B acad:", B_ac_aporte, "| B est:", B_est_aporte, "| B fun:", B_fun_aporte))
+print(paste("Blancos:TOTAL", bl_total, " | bl acad:", bl_ac_aporte, "| bl est:", bl_est_aporte, "| bl fun:", bl_fun_aporte))
+
+print(paste("VERIFICACION - SUMA TOTAL VOTOS POND POR ESTAMENTO:", A_total+B_total+bl_total))
+```
+# Proclamación de resultados y ganador
+Se debe verificar caso de que blanco gane, se repite elección y también posibles empates entre las tres opciones, incluyendo la opción en la que todos son iguales. En total son 7 opciones.
+
+```{r}
+print(paste("RESULTADOS -->", "A:", A_total, "B:", B_total, "Blancos:",bl_total ))
+if (A_total > B_total && A_total > bl_total) {
+  print("A GANA")
+}
+if (B_total > A_total && B_total > bl_total){
+  print("B GANA")
+}
+if (bl_total > A_total && bl_total > B_total){
+  print("blanco obtiene mayoría, se repite elección")
+}
+if (A_total == B_total & A_total > bl_total){
+  print("Empate A y B")
+}
+if (A_total == bl_total & A_total > B_total){
+  print("Empate A y blanco")
+}
+if (bl_total == B_total & B_total > A_total){
+  print("Empate B y blanco")
+}
+if (bl_total == B_total && bl_total== A_total){
+  print("TODOS empatados")
+}
+```
+
+
