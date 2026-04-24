@@ -1,1 +1,2 @@
 # eleccionesupla
+Calcula las ponderaciones
